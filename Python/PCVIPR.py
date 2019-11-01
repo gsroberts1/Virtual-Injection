@@ -36,6 +36,7 @@ class PCVIPR:
         self.resX = int(float(self.headerDict['matrixx']))
         self.resY = int(float(self.headerDict['matrixy']))
         self.resZ = int(float(self.headerDict['matrixz']))
+        self.fovX = int(float(self.headerDict['fovx']))
         self.numT = int(float(self.headerDict['frames']))
         if self.debug: print((self.headerDict))
     

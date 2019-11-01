@@ -1,13 +1,12 @@
-function pcvipr2nii(srcDir)
+function dat2nii(dataFolder)
 
-    curDir = pwd; 
-    if nargin<1 || (~ischar(srcDir) && ~isstring(srcDir)) || ~exist(srcDir, 'dir')
-        srcDir = curDir;    
-        fprintf('Setting source directory to %s\n', srcDir);
+    if nargin<1 || (~ischar(dataFolder) && ~isstring(dataFolder)) || ~exist(dataFolder, 'dir')
+        dataFolder = uigetdir();    
+        fprintf('Setting source directory to %s\n', dataFolder);
     end
-    srcDir = char(srcDir);
+    dataFolder = char(dataFolder);
     
-    pcVIPRHeaderFilePath = fullfile(srcDir,'pcvipr_header.txt');
+    pcVIPRHeaderFilePath = fullfile(dataFolder,'pcvipr_header.txt');
     if exist(pcVIPRHeaderFilePath, 'file')==2
         fid = fopen(pcVIPRHeaderFilePath);
         if fid<0
@@ -18,18 +17,16 @@ function pcvipr2nii(srcDir)
             value = C{2};
             fclose(fid);
             
+            % Scan parameters
             fov = lookup(field,value,'fovx',3);
-            
             xSize = lookup(field,value,'matrixx',1);
             ySize = lookup(field,value,'matrixy',1);
             zSize = lookup(field,value,'matrixz',1);
             nT = lookup(field,value,'frames',1);
             dT = lookup(field,value,'timeres',1);
-            
             spacing = (fov./[xSize;ySize;zSize]);
             p = lookup(field,value,'sx',3)';
-            R = reshape(lookup(field,value,'ix',9),[3,3])';
-            
+            R = reshape(lookup(field,value,'ix',9),[3,3])';           
             cd = zeros(xSize,ySize,zSize,nT, 'int16');
             mag = zeros(xSize,ySize,zSize,nT, 'int16');
             velX = zeros(xSize,ySize,zSize,nT, 'int16');
@@ -41,35 +38,35 @@ function pcvipr2nii(srcDir)
             avgVelY = zeros(xSize,ySize,zSize, 'int16'); %#ok<PREALL>
             avgVelZ = zeros(xSize,ySize,zSize, 'int16'); %#ok<PREALL>
             
-            name = fullfile(srcDir,'CD.dat');
+            name = fullfile(dataFolder,'CD.dat');
             if ~exist(name, 'file')
                 error('Could not find CD.dat file.');
             end
             m = memmapfile(name,'Format','int16');
             avgCd = reshape(m.Data,[xSize,ySize,zSize]);
             
-            name = fullfile(srcDir,'MAG.dat');
+            name = fullfile(dataFolder,'MAG.dat');
             if ~exist(name, 'file')
                 error('Could not find MAG.dat file.');
             end
             m = memmapfile(name,'Format','int16');
             avgMag = reshape(m.Data,[xSize,ySize,zSize]);
             
-            name = fullfile(srcDir,'comp_vd_1.dat');
+            name = fullfile(dataFolder,'comp_vd_1.dat');
             if ~exist(name, 'file')
                 error('Could not find comp_vd_1.dat file.');
             end
             m = memmapfile(name,'Format','int16');
             avgVelX = reshape(m.Data,[xSize,ySize,zSize]);
             
-            name = fullfile(srcDir,'comp_vd_2.dat');
+            name = fullfile(dataFolder,'comp_vd_2.dat');
             if ~exist(name, 'file')
                 error('Could not find comp_vd_2.dat file.');
             end
             m = memmapfile(name,'Format','int16');
             avgVelY = reshape(m.Data,[xSize,ySize,zSize]);
             
-            name = fullfile(srcDir,'comp_vd_3.dat');
+            name = fullfile(dataFolder,'comp_vd_3.dat');
             if ~exist(name, 'file')
                 error('Could not find comp_vd_3.dat file.');
             end
@@ -78,28 +75,28 @@ function pcvipr2nii(srcDir)
             
             
             for ii=1:nT
-                name = fullfile(srcDir,sprintf('ph_%03d_cd.dat',ii-1));
+                name = fullfile(dataFolder,sprintf('ph_%03d_cd.dat',ii-1));
                 if ~exist(name, 'file')
                     error('Could not find ph_%03d_cd.dat file.',ii-1);
                 end
                 m = memmapfile(name,'Format','int16');
                 cd(:,:,:,ii) = reshape(m.Data,[xSize,ySize,zSize]);
                 
-                name = fullfile(srcDir,sprintf('ph_%03d_mag.dat',ii-1));
+                name = fullfile(dataFolder,sprintf('ph_%03d_mag.dat',ii-1));
                 if ~exist(name, 'file')
                     error('Could not find ph_%03d_mag.dat file.',ii-1);
                 end
                 m = memmapfile(name,'Format','int16');
                 mag(:,:,:,ii) = reshape(m.Data,[xSize,ySize,zSize]);
                 
-                name = fullfile(srcDir,sprintf('ph_%03d_vd_1.dat',ii-1));
+                name = fullfile(dataFolder,sprintf('ph_%03d_vd_1.dat',ii-1));
                 if ~exist(name, 'file')
                     error('Could not find file "ph_%03d_vd_1.dat".',ii-1);
                 end
                 m = memmapfile(name,'Format','int16');
                 velX(:,:,:,ii) = reshape(m.Data,[xSize,ySize,zSize]);
                 
-                name = fullfile(srcDir,sprintf('ph_%03d_vd_2.dat',ii-1));
+                name = fullfile(dataFolder,sprintf('ph_%03d_vd_2.dat',ii-1));
                 
                 if ~exist(name, 'file')
                     error('Could not find file "ph_%03d_vd_2.dat".',ii-1);
@@ -107,7 +104,7 @@ function pcvipr2nii(srcDir)
                 m = memmapfile(name,'Format','int16');
                 velY(:,:,:,ii) = reshape(m.data,[xSize,ySize,zSize]);
                 
-                name = fullfile(srcDir,sprintf('ph_%03d_vd_3.dat',ii-1));
+                name = fullfile(dataFolder,sprintf('ph_%03d_vd_3.dat',ii-1));
                 if ~exist(name, 'file')
                     error('Could not find file "ph_%03d_vd_3.dat".',ii-1);
                 end
@@ -151,32 +148,32 @@ function pcvipr2nii(srcDir)
         info.ImageSize = [xSize, ySize, zSize];
         info.PixelDimensions = spacing;
         info.TimeUnits = 'None';
-        niftiwrite(mag, fullfile(srcDir,"MAG.nii"), info);
-        niftiwrite(cd, fullfile(srcDir,"CD.nii"), info);
-        niftiwrite(velX, fullfile(srcDir,"VELX.nii"), info);
-        niftiwrite(velY, fullfile(srcDir,"VELY.nii"), info);
-        niftiwrite(velZ, fullfile(srcDir,"VELZ.nii"), info);
+        niftiwrite(mag, fullfile(dataFolder,"MAG.nii"), info);
+        niftiwrite(cd, fullfile(dataFolder,"CD.nii"), info);
+        niftiwrite(velX, fullfile(dataFolder,"VELX.nii"), info);
+        niftiwrite(velY, fullfile(dataFolder,"VELY.nii"), info);
+        niftiwrite(velZ, fullfile(dataFolder,"VELZ.nii"), info);
 
     elseif nT>1
         info.ImageSize = [xSize, ySize, zSize, nT];
         info.PixelDimensions = [spacing', dT];
         info.TimeUnits = 'Millisecond';
-        niftiwrite(mag, fullfile(srcDir,"MAG.nii"), info);
-        niftiwrite(cd, fullfile(srcDir,"CD.nii)"), info);
-        niftiwrite(velX, fullfile(srcDir,"VELX.nii"), info);
-        niftiwrite(velY, fullfile(srcDir,"VELY.nii"), info);
-        niftiwrite(velZ, fullfile(srcDir,"VELZ.nii"), info);
+        niftiwrite(mag, fullfile(dataFolder,"MAG.nii"), info);
+        niftiwrite(cd, fullfile(dataFolder,"CD.nii)"), info);
+        niftiwrite(velX, fullfile(dataFolder,"VELX.nii"), info);
+        niftiwrite(velY, fullfile(dataFolder,"VELY.nii"), info);
+        niftiwrite(velZ, fullfile(dataFolder,"VELZ.nii"), info);
 
         info.ImageSize = info.ImageSize(1:3);
         info.PixelDimensions = info.PixelDimensions(1:3);
         info.raw.dim(1) = 3;
         info.raw.dim(5) = 1;
         info.TimeUnits = 'None';
-        niftiwrite(avgMag, fullfile(srcDir,"AVG_MAG.nii"), info);
-        niftiwrite(avgCd, fullfile(srcDir,"AVG_CD.nii"), info);
-        niftiwrite(avgVelX, fullfile(srcDir,"AVG_VELX.nii"), info);
-        niftiwrite(avgVelY, fullfile(srcDir,"AVG_VELY.nii"), info);
-        niftiwrite(avgVelZ, fullfile(srcDir,"AVG_VELZ.nii"), info);
+        niftiwrite(avgMag, fullfile(dataFolder,"AVG_MAG.nii"), info);
+        niftiwrite(avgCd, fullfile(dataFolder,"AVG_CD.nii"), info);
+        niftiwrite(avgVelX, fullfile(dataFolder,"AVG_VELX.nii"), info);
+        niftiwrite(avgVelY, fullfile(dataFolder,"AVG_VELY.nii"), info);
+        niftiwrite(avgVelZ, fullfile(dataFolder,"AVG_VELZ.nii"), info);
     end
 end
 
