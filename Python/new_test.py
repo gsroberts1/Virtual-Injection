@@ -9,7 +9,7 @@ from PCVIPR import PCVIPR
 import time
 import copy as cp
     
-PLoader = PCVIPR('D:\\Virtual_Injection_Data\\AVM\\120308_AVM\\PCVIPR')
+PLoader = PCVIPR('D:\\Virtual_Injection_Data\\AVM\\NO_PCASL\\161003_DAVF_mr5\\PCVIPR\\dat')
 sizex = PLoader.resX
 fovx = PLoader.fovX
 CD = PLoader.getArray('CD.dat')
@@ -17,8 +17,9 @@ MAG = PLoader.getArray('MAG.dat')
 VX = PLoader.getArray('comp_vd_1.dat')
 VY = PLoader.getArray('comp_vd_2.dat')
 VZ = PLoader.getArray('comp_vd_3.dat')
+#CD[200,115:120,45:50] = 10000;
 plt.figure()
-plt.imshow(CD[300,:,:]) 
+plt.imshow(CD[200,:,:]) 
 plt.show()
 
 
@@ -28,7 +29,7 @@ V[:,:,:,1] = -VY
 V[:,:,:,2] = -VX
 
 P = copy(CD).astype('double')
-thresh1 = 3500 ### Adjust this
+thresh1 = 4500 ### Adjust this
 
 plt.figure()
 plt.imshow((P>thresh1).max(0)) 
@@ -44,18 +45,18 @@ P *= 1/Pmax
 conv = sizex/fovx/1000  # 320 pixels, 220 mm
 V *= conv  # convert to pixels/ms
 
-zs = 300 # Select slice location
-width = 1 # Width of slice
-thresh = 100
-plane = sum(CD[zs-width:zs+width,:,:],axis=0) # Start plane (near base of skull)
-dplane = sign(sum(VZ[zs-width:zs+width,:,:],axis=0))
+#zs = 238 # Select slice location
+#width = 1 # Width of slice
+#thresh = 100
+#plane = sum(CD[zs-width:zs+width,:,:],axis=0) # Start plane (near base of skull)
+#dplane = sign(sum(VZ[zs-width:zs+width,:,:],axis=0))
 
 
-plane[plane<=thresh] = 0
-plane[plane>thresh] = 1
+#plane[plane<=thresh] = 0
+#plane[plane>thresh] = 1
 
-plane[dplane<0] = 0
-Xm, Ym = nonzero(plane)
+#plane[dplane<0] = 0
+#Xm, Ym = nonzero(plane)
 
 # Bolus creation
 allpaths = []
@@ -64,22 +65,22 @@ max_paths = 10000
 #r0 = array([300,197,158.5]) #carotid2
 #r0 = array([229,163,161]) #basilar
 #r0 = array([134,82,132]) #AVM
-#r0 = array([150,150,200]) #AVM2
+r0 = array([200,118,47]) #AVM2
 #r0 = array([226,147.5,186]) #carotid1 hgih
 #for i in range(int(max_paths/2)):
 #    allpaths.append(bPath( [sampleInSphere(1.0,r0)] ))
 #r0 = array([260,139.5,198]) #carotid2
-#for i in range(int(max_paths/2)):
-    #allpaths.append(bPath( [sampleInSphere(3.0,r0)] ))
+for i in range(int(max_paths/2)):
+    allpaths.append(bPath( [sampleInSphere(3.0,r0)] ))
     
-for i in range(max_paths):
-    allpaths.append(bPath( [sampleInPlane(Xm, Ym, zs)] ))
+    #for i in range(max_paths):
+        #allpaths.append(bPath( [sampleInPlane(Xm, Ym, zs)] ))
 
 # Calculate pathlines
 spread = 0.15
 cutoff = 0.7    #0.9
-steps = 500 # Iterations (steps*offset = time elapsed)
-offset = 2.5 # Time increment (ms)
+steps = 1200 # Iterations (steps*offset = time elapsed)
+offset = 4 # Time increment (ms)
 reducer = 2.0
 start = time.clock()
 
