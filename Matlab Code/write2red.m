@@ -6,6 +6,8 @@ for i=1:numel(dirInfo)
 end 
 mkdir red
 cd red
+
+save('reds.mat','temp');
 for i=1:numel(dirInfo)
     name = dirInfo(i).name;
     name = name(1:(end-4));

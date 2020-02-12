@@ -8,6 +8,7 @@ from toa import *
 from PCVIPR import PCVIPR
 import time
 import copy as cp
+import scipy.io
     
 PLoader = PCVIPR('D:\\Virtual_Injection_Data\\AVM\\NO_PCASL\\161003_DAVF_mr5\\PCVIPR\\dat')
 sizex = PLoader.resX
@@ -17,11 +18,16 @@ MAG = PLoader.getArray('MAG.dat')
 VX = PLoader.getArray('comp_vd_1.dat')
 VY = PLoader.getArray('comp_vd_2.dat')
 VZ = PLoader.getArray('comp_vd_3.dat')
-#CD[200,115:120,45:50] = 10000;
+#CD[140:150,155:165,90:100] = 10000;
 plt.figure()
-plt.imshow(CD[200,:,:]) 
+plt.imshow(CD[145,:,:]) 
 plt.show()
-
+plt.figure()
+plt.imshow(CD[:,160,:]) 
+plt.show()
+plt.figure()
+plt.imshow(CD[:,:,95]) 
+plt.show()
 
 V = zeros((VX.shape[0],VX.shape[1],VX.shape[2],3))
 V[:,:,:,0] = -VZ
@@ -45,17 +51,17 @@ P *= 1/Pmax
 conv = sizex/fovx/1000  # 320 pixels, 220 mm
 V *= conv  # convert to pixels/ms
 
-#zs = 238 # Select slice location
-#width = 1 # Width of slice
-#thresh = 100
+#zs = 205 # Select slice location
+#width = 2 # Width of slice
+#thresh = 4000
 #plane = sum(CD[zs-width:zs+width,:,:],axis=0) # Start plane (near base of skull)
 #dplane = sign(sum(VZ[zs-width:zs+width,:,:],axis=0))
-
 
 #plane[plane<=thresh] = 0
 #plane[plane>thresh] = 1
 
 #plane[dplane<0] = 0
+#plane[dplane>0] = 0
 #Xm, Ym = nonzero(plane)
 
 # Bolus creation
@@ -65,7 +71,7 @@ max_paths = 10000
 #r0 = array([300,197,158.5]) #carotid2
 #r0 = array([229,163,161]) #basilar
 #r0 = array([134,82,132]) #AVM
-r0 = array([200,118,47]) #AVM2
+r0 = array([145,160,95]) #AVM2
 #r0 = array([226,147.5,186]) #carotid1 hgih
 #for i in range(int(max_paths/2)):
 #    allpaths.append(bPath( [sampleInSphere(1.0,r0)] ))
@@ -73,14 +79,14 @@ r0 = array([200,118,47]) #AVM2
 for i in range(int(max_paths/2)):
     allpaths.append(bPath( [sampleInSphere(3.0,r0)] ))
     
-    #for i in range(max_paths):
-        #allpaths.append(bPath( [sampleInPlane(Xm, Ym, zs)] ))
+#for i in range(max_paths):
+    #allpaths.append(bPath( [sampleInPlane(Xm, Ym, zs)] ))
 
 # Calculate pathlines
 spread = 0.15
 cutoff = 0.7    #0.9
 steps = 1200 # Iterations (steps*offset = time elapsed)
-offset = 4 # Time increment (ms)
+offset = 1 # Time increment (ms)
 reducer = 2.0
 start = time.clock()
 
