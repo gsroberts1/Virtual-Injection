@@ -1,11 +1,8 @@
 from pylab import *
 from interpolate_testcy import *
-import operator
 from collections import deque
-import copy as cp
 
 class bPath:
-    
     def __init__(self, initPath):
         self.pos = list(initPath)
         self.prob = 1.0
@@ -15,7 +12,6 @@ class bPath:
         self.plist = deque([1.0,]*self.plength)
         
     def stepAlong(self, V, P, split=0, spread = 0.1):
-        
         # Copy extra probabalistic paths
         out = []
         for i in range(split):
@@ -42,8 +38,7 @@ class bPath:
             
         # Return extra paths (current path was updated in place)
         return out
-        
-        
+
     def updateProb(self, P):
         
         p = 1.0
@@ -63,8 +58,7 @@ class bPath:
         self.plist.popleft()
         
         self.prob = prod(self.plist)
-            
-        
+
     def display(self):
         patharray = array(self.pos)
         print(patharray)
