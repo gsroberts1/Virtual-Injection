@@ -1,23 +1,20 @@
 import numpy as np
-import os
 
 
 ## PCVIPR file handling and header parsing
 #
-# This class does filehandling and header parsing for PC-VIPR datasets,
-# ultimately takes just a directory and the class will allow quick calls to
-# specific data
-#
-# Still needs to be able to handle the time averaged data 
+# Filehandling and header parsing for PC-VIPR datasets, takes a
+# directory and the class will allow quick calls to specific data
+# Still needs to be able to handle the time-averaged data
 class PCVIPR:
     ## Initialize with a directory
     def __init__(self, directory, initdebug=0):
-        self.debug = initdebug
+        self.headerDict = {}  # for header attribute names and values
+        self.debug = initdebug  # set as 0 default, otherwise print info regularly
         if not (directory[-1] == '/' or directory[-1] == '\\'):
-            directory = directory + '/'
-        self.dir = directory
-        self.parseHeader()
-        self.countNumT()
+            directory = directory + '/'  # add trailing '/' if directory doesn't have it
+        self.dir = directory  # pcviprheader.txt parent directory
+        self.parseHeader()  # call parseHeader initially
         if self.debug:
             print('Folder loaded')
 
@@ -26,59 +23,48 @@ class PCVIPR:
     # Read and parse header, stored in self.headerDict as all
     # strings, and resolution/timeframes in seperate variables
     def parseHeader(self):
-        self.headerDict = {}
-        file = open(self.dir + 'pcvipr_header.txt')
+        file = open(self.dir + 'pcvipr_header.txt')  # open file (not binary)
         for line in file:
-            keyVal = line.split(' ', 1)
-            self.headerDict[keyVal[0]] = keyVal[1].rstrip()
-        self.resX = int(float(self.headerDict['matrixx']))
+            keyVal = line.split(' ', 1)  # pull out only one line, split by space
+            self.headerDict[keyVal[0]] = keyVal[1].rstrip()  # write out key/value in dict
+        self.resX = int(float(self.headerDict['matrixx']))  # pull matrix sizes
         self.resY = int(float(self.headerDict['matrixy']))
         self.resZ = int(float(self.headerDict['matrixz']))
-        self.fovX = int(float(self.headerDict['fovx']))
-        self.numT = int(float(self.headerDict['frames']))
-        if self.debug: print((self.headerDict))
+        self.fovX = int(float(self.headerDict['fovx']))  # pull field of view (mm)
+        self.numT = int(float(self.headerDict['frames']))  # pull number of cardiac frames
+        if self.debug:
+            print(self.headerDict)
 
     ## Returns the numpy array from the given filename
     #
     # Mainly called by getData
     def getArray(self, array):
-        fd = open(self.dir + array, 'rb')
-        size = self.resX * self.resY * self.resY
-        dtype = 'h'  # found with numpy.dtype('int16').char
+        fd = open(self.dir + array, 'rb')  # open binary .dat file
         data = np.fromfile(file=fd, dtype=np.int16).reshape((self.resX, self.resY, self.resY))
         return data
 
-    ## Gets the number of timeframes
-    #
-    # Counts the number of magnitude datasets, this is necessary because the
-    # header value is not always correct
-    def countNumT(self):
-        numT = 0
-        for file in os.listdir(self.dir):
-            if file[-8:] == '_mag.dat':
-                numT = numT + 1
-        self.numT = numT
-        if self.debug: print(('Time points: ' + str(numT)))
-
-    ## Returns the dataset of 'type' at time 't'
-    def getData(self, type, t):
-        type = type.lower()
-        validTypes = ['mag', 'v1', 'v2', 'v3', 'cd']
-        if not type in validTypes:
-            print(('ERROR: ' + type + 'is not a valid type, try: ' + str(validTypes)))
-            return 0
+    ## Returns the dataset of 'Type' at time 't'
+    def getData(self, Type, t):
+        Type = Type.lower()  # lowercase all entries to standardize
+        validTypes = ['mag', 'v1', 'v2', 'v3', 'cd']  # options for loading
+        if Type not in validTypes:
+            print(('ERROR: ' + Type + 'is not a valid type, try: ' + str(validTypes)))
+            return 0  # if we didn't load a correct data type.
         elif t >= self.numT:
             print(('ERROR: time t is too high, numT = ' + str(self.numT)))
-            return 0
+            return 0  # if time frames 't' exceeds actual cardiac frames
+        elif t < 1:
+            print('ERROR: time t needs to be > 0')
+            return 0  # if time frames 't' is not positive
         else:
-            if type == 'mag':
+            if Type == 'mag':  # if magnitude dataset
                 filename = "ph_{0:03d}_mag.dat".format(t)
-            elif type == 'v1':
+            elif Type == 'v1':  # if velocity (x) dataset
                 filename = "ph_{0:03d}_vd_1.dat".format(t)
-            elif type == 'v2':
+            elif Type == 'v2':  # if velocity (y) dataset
                 filename = "ph_{0:03d}_vd_2.dat".format(t)
-            elif type == 'v3':
+            elif Type == 'v3':  # if velocity (z) dataset
                 filename = "ph_{0:03d}_vd_3.dat".format(t)
-            elif type == 'cd':
+            elif Type == 'cd':  # if comple difference dataset
                 filename = "ph_{0:03d}_cd.dat".format(t)
             return self.getArray(filename)
