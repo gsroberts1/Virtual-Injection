@@ -127,75 +127,60 @@ def stepPathsDisplace(pathlist, V, offset):
     r1 = ceil(pos0)
     dr = pos0 - r0
     ddr = 1.0 - dr
-    
     k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     
-    pos1 = pos0+k1*h/2
-    
+    pos1 = pos0 + k1*h/2
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-    
     k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     
-    pos1 = pos0+k2*h/2
-    
+    pos1 = pos0 + k2*h/2
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-    
     k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     
-    pos1 = pos0+k3*h
-    
-    r0 = floor(pos1)
-    r1 = ceil(pos1)
-    dr = pos1 - r0
+    pos2 = pos0 + k3*h
+    r0 = floor(pos2)
+    r1 = ceil(pos2)
+    dr = pos2 - r0
     ddr = 1.0 - dr
-    
     k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     
     Step = h/6*(k1 + 2*k2 + 2*k3 + k4)
-    
-    pos0 = pos0+Step
+    pos0 = pos0 + Step
     h = pathlist[0].h
-    
+
     r0 = floor(pos0)
     r1 = ceil(pos0)
     dr = pos0 - r0
     ddr = 1.0 - dr
-    
     k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    
-    pos1 = pos0+k1*h/2
-    
+
+    pos1 = pos0 + k1*h/2
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-    
     k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    
-    pos1 = pos0+k2*h/2
-    
+
+    pos1 = pos0 + k2*h/2
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-    
     k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    
-    pos1 = pos0+k3*h
-    
-    r0 = floor(pos1)
-    r1 = ceil(pos1)
-    dr = pos1 - r0
+
+    pos2 = pos0 + k3*h
+    r0 = floor(pos2)
+    r1 = ceil(pos2)
+    dr = pos2 - r0
     ddr = 1.0 - dr
-    
     k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    
+
     Step = h/6*(k1 + 2*k2 + 2*k3 + k4)
     
     for i in range(len(pathlist)):
@@ -203,8 +188,8 @@ def stepPathsDisplace(pathlist, V, offset):
 
 
 def stepPathsDisplaceRand(pathlist, V, offset, P, spread, cutoff, reducer, PLoader):
-    h = offset
-    start_length = len(pathlist)
+    h = offset  # temporal step size
+    start_length = len(pathlist)  # should be same as max_paths
     pos0 = array([path.pos[-1] for path in pathlist])
 
     maxRes = max(PLoader.resX, PLoader.resY, PLoader.resZ)
@@ -216,59 +201,59 @@ def stepPathsDisplaceRand(pathlist, V, offset, P, spread, cutoff, reducer, PLoad
     oobounds = sort(oobounds)[::-1]
     print('# discarded: ' + str(len(oobounds)))
 
+    ## Begin Runge-Kutta (RK4) Method
+    r0 = floor(pos0)  # left endpoint for interp
+    r1 = ceil(pos0)  # right endpoint for interp
+    dr = pos0 - r0  # get distance from left endpoint to true point (for interpolation)
+    ddr = 1.0 - dr  # get distance from right endpoint
+    k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)  # get interpolated velocity (dr/dt=k1) at pos0
+
+    pos1 = pos0 + k1*h/2  # move to midpoint (h/2) using slope k1
+    r0 = floor(pos1)
+    r1 = ceil(pos1)
+    dr = pos1 - r0
+    ddr = 1.0 - dr
+    k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)  # get interpolated velocity at first pos1
+
+    pos1 = pos0 + k2*h/2  # move to midpoint (h/2) using slope k2
+    r0 = floor(pos1)
+    r1 = ceil(pos1)
+    dr = pos1 - r0
+    ddr = 1.0 - dr
+    k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)  # get interpolated velocity at second pos1
+
+    pos2 = pos0 + k3*h  # move to endpoint (h) using slope k3
+    r0 = floor(pos2)
+    r1 = ceil(pos2)
+    dr = pos2 - r0
+    ddr = 1.0 - dr
+    k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)  # get interpolated velocity at pos2
+    
+    Step = h/6*(k1 + 2*k2 + 2*k3 + k4)  # get approximation of velocity trajectory (weighted average of dr/dt's)
+    pos0 = pos0 + Step  # Move along v
+    h = pathlist[0].h
+
+    ## Perform second RK4 step
     r0 = floor(pos0)
     r1 = ceil(pos0)
     dr = pos0 - r0
     ddr = 1.0 - dr
     k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     pos1 = pos0 + k1*h/2
-
+    
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
     k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     pos1 = pos0 + k2*h/2
-
+    
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
     k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
     pos1 = pos0 + k3*h
-
-    r0 = floor(pos1)
-    r1 = ceil(pos1)
-    dr = pos1 - r0
-    ddr = 1.0 - dr
-    k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    
-    Step = h/6*(k1 + 2*k2 + 2*k3 + k4)
-
-    
-    pos0 = pos0 + Step
-    h = pathlist[0].h
-    
-    r0 = floor(pos0)
-    r1 = ceil(pos0)
-    dr = pos0 - r0
-    ddr = 1.0 - dr
-    k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    pos1 = pos0+k1*h/2
-    
-    r0 = floor(pos1)
-    r1 = ceil(pos1)
-    dr = pos1 - r0
-    ddr = 1.0 - dr
-    k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    pos1 = pos0+k2*h/2
-    
-    r0 = floor(pos1)
-    r1 = ceil(pos1)
-    dr = pos1 - r0
-    ddr = 1.0 - dr
-    k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    pos1 = pos0+k3*h
     
     r0 = floor(pos1)
     r1 = ceil(pos1)
@@ -304,7 +289,7 @@ def stepPathsDisplaceRand(pathlist, V, offset, P, spread, cutoff, reducer, PLoad
     
     kill_list.reverse()
     
-    stoppedpaths = []
+    # stoppedpaths = []
     for k in kill_list:
         # stoppedpaths.append(pathlist.pop(k))
         pathlist.pop(k)
@@ -316,7 +301,7 @@ def stepPathsDisplaceRand(pathlist, V, offset, P, spread, cutoff, reducer, PLoad
     # del pathlist[:crop0]
     # del pathlist[crop1:]
     
-    # Split the good lines further to keep up the number of lines
+    # Add lost lines to keep up the number of lines
     N_new = start_length-len(pathlist)
     counter = 0
     while counter < N_new:
@@ -348,7 +333,7 @@ def stepPathsDisplaceRand(pathlist, V, offset, P, spread, cutoff, reducer, PLoad
 def getKE(pathlist):
     for path in pathlist:
         v = path.pos[-1] - path.pos[-2]
-        path.KE = dot(v,v)
+        path.KE = dot(v, v)
 
 
 def stepPathsDisplaceRand2(pathlist, V, offset, P, spread, cutoff):
@@ -458,23 +443,24 @@ def stepPathsDisplaceRand2(pathlist, V, offset, P, spread, cutoff):
 def newStepProb(pos, newpos, P):
     p = 1.0
         
-    p = p * interpolate3Dpoint(P,newpos)
+    p = p * interpolate3Dpoint(P, newpos)
     
     # Probability based on % change in KE
-    if (len(pos) > 1):
+    if len(pos) > 1:
         dv1 = pos[-1] - pos[-2]
         dv2 = newpos - pos[-1]
-        dKE = (dot(dv1,dv1)-dot(dv2,dv2))/dot(dv1,dv1)
-        if (abs(dKE) > 1): dKE=1
+        dKE = ( dot(dv1, dv1) - dot(dv2, dv2) )/dot(dv1, dv1)
+        if abs(dKE) > 1:
+            dKE = 1
         p = p * (1-abs(dKE))
             
     return p
 
 
-def randomizeSplit(pathlist, P, split, spread):
+def randomizeSplit(pathlist, P, Split, spread):
     outlist = []
     for i in range(len(pathlist)):
-        for j in range(split):
+        for j in range(Split):
             outlist.append(bPath(pathlist[i].pos))
             outlist[-1].prob = pathlist[i].prob
             outlist[-1].plist = deque(pathlist[i].plist)
