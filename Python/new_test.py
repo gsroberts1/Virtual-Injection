@@ -141,11 +141,6 @@ def open_second():
         thresh = 0.09  # image threshold for vessel segmentation
 
         fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(2, 2)  # plot MIPs and subsequent angiograms with interactive thresh slider
-        ax1.imshow(axial, cmap='gray')
-        ax2.imshow((CD > thresh).max(0), cmap='gray')  # plot angio based on current thresh
-        ax3.imshow(sagittal, cmap='gray')
-        ax4.imshow((CD > thresh).max(1), cmap='gray')
-
         plt.setp(ax1.get_xticklabels(), visible=False)  # get rid of axes and tick marks
         plt.setp(ax1.get_yticklabels(), visible=False)
         ax1.tick_params(axis='both', which='both', length=0)
@@ -158,6 +153,18 @@ def open_second():
         plt.setp(ax4.get_xticklabels(), visible=False)
         plt.setp(ax4.get_yticklabels(), visible=False)
         ax4.tick_params(axis='both', which='both', length=0)
+        fig.suptitle('Select angiogram threshold. Close figure (x) when finished.', fontsize=12)
+
+        ax1.imshow(axial, cmap='gray')
+        ax1.set_title('Raw Axial', fontsize=8)
+        ax2.imshow((CD > thresh).max(0), cmap='gray')  # plot angio based on current thresh
+        ax2.set_title('Axial Segmentation', fontsize=8)
+        ax3.imshow(sagittal, cmap='gray')
+        ax3.set_title('Raw Sagittal', fontsize=8)
+        ax4.imshow((CD > thresh).max(1), cmap='gray')
+        ax4.set_title('Sagittal Segmentation', fontsize=8)
+
+
 
         axcolor = 'lightgoldenrodyellow'  # color of slider
         axThresh = plt.axes([0.15, 0.05, 0.65, 0.03], facecolor=axcolor)  # location of slider wrt plt
@@ -182,6 +189,10 @@ def open_second():
         angio = CD > thresh  # create final angiogram
         if samplingType == 'plane':
             fig, axs = plt.subplots(1)
+            plt.setp(axs.get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            plt.setp(axs.get_yticklabels(), visible=False)
+            fig.suptitle('Localize slice of interest. Close figure (x) when finished.', fontsize=12)
+
             axs.imshow(sagittal, cmap='gray')  # show only sagittal plot for placement of axial seeding plane
             clickPts = plt.ginput(1)  # allow for interactive point selecting on plot
             slic = clickPts[0][1]  # get locations of selection
@@ -190,8 +201,16 @@ def open_second():
             plt.show(block='false')  # force user to exit figure before code proceeds
         elif samplingType == 'spherical':
             fig, axs = plt.subplots(ncols=2)
+            plt.setp(axs[0].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            plt.setp(axs[0].get_yticklabels(), visible=False)
+            plt.setp(axs[1].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            plt.setp(axs[1].get_yticklabels(), visible=False)
+            fig.suptitle('Localize ROI of interest. Close figure (x) when finished.', fontsize=12)
+
             axs[0].imshow(axial, cmap='gray')  # show MIPs
+            axs[0].set_title('Axial MIP (select ROI)', fontsize=8)
             axs[1].imshow(sagittal, cmap='gray')
+            axs[1].set_title('Sagittal MIP (select ROI)', fontsize=8)
             clickPts = fig.ginput(2, show_clicks='True', timeout=-1)  # select two points on both images
             row = clickPts[0][1]  # get row,col,slice in image space from point selection
             col1 = clickPts[0][0]
