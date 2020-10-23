@@ -5,6 +5,9 @@ fold = './inject_data/'
 
 filelist = os.listdir(fold)
 
+# d0 = axial
+# d1 = coronal
+# d2 = sagittal
 for f in filelist:
     if f[-4:]=='.npy' and f[:3]=='TOA':
         check = 0

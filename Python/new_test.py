@@ -112,7 +112,7 @@ def open_second():
         steps = 1200  # iterations (steps*offset = time elapsed)
         offset = 1  # temporal step size (ms)
         reducer = 2.0  #
-        max_paths = 10000  # initial number of seeds (choose 1000-20 000 accuracy)
+        max_paths = 2000  # initial number of seeds (choose 1000-20 000 accuracy)
         start = time.clock()
         ###################################
 
@@ -310,9 +310,6 @@ title.grid(column=1, row=4, padx=20, pady=20)
 #button1.grid(column=1, row=3, padx=10, pady=10)
 button2=ttk.Button(gui, text='Continue', width=40, command=open_second)
 button2.grid(column=1, row=2, padx=10, pady=10)
-
-
-
 
 
 copyright_s=ttk.Label(gui, text="\u00a9 2020 UW Madison Department of Medical Physics",background='White', font=('Arial', 10), justify=LEFT)
