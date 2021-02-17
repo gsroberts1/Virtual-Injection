@@ -21,13 +21,14 @@ def sampleInSphere(rad, r0):
 
 
 ## Seed random points within a plane
-def sampleInPlane(X, Y, zs):
+def sampleInPlane(Z, Y, X):
     i = randint(0, len(X))  # get random integer
     j = randint(0, len(Y))
-
+    k = randint(0, len(Z))
     x = X[i]  # place seed in random X,Y location
     y = Y[j]
-
-    out = array([x, y, zs])
+    z = Z[k]
+    # out = array([x, y, z])
+    out = array([z, y, x])
 
     return out
