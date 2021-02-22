@@ -9,9 +9,9 @@ sagittal = squeeze(double(max(TOA,[],3)));
 coronal = squeeze(double(max(TOA,[],2)));
 axial = squeeze(double(max(TOA,[],1)));
 
-% sagittal = imresize(sagittal,[1024 1024],'bicubic');
-% coronal = imresize(coronal,[1024 1024],'bicubic');
-% axial = imresize(axial,[1024 1024],'bicubic');
+sagittal = imresize(sagittal,[512 512],'bicubic');
+coronal = imresize(coronal,[512 512],'bicubic');
+axial = imresize(axial,[512 512],'bicubic');
 
 fig = figure;
 for t=1:length(npies)

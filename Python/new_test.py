@@ -263,7 +263,7 @@ def open_second():
         for i in range(steps):
             print(('Iteration: ' + str(i)))
             stepPathsDisplaceRand(allpaths, V, offset, CD, spread, cutoff, reducer, PLoader)
-
+            # stepPathsDisplace(allpaths, V, offset)
             print('Length: ' + str(len(allpaths)))
 
             TOA = TOA + TOAMap(allpaths, CD.shape, max_paths / len(allpaths))
@@ -275,7 +275,7 @@ def open_second():
         fullStreams = zeros([len(allpaths), 3, steps])
         for s in range(steps):
             fullStreams[:,:,s] = array([path.pos[s] for path in allpaths])
-        save('inject_data/streamlines.npy', fullStreams)
+        save(saveDir + '/streamlines.npy', fullStreams)
         print(('Time: ' + str(time.process_time() - start)))
 
     browseButton = ttk.Button(bot, text="Select Data Folder", command=get_data, width=40
