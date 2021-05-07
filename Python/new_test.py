@@ -90,30 +90,30 @@ def open_second():
         # Add directory 'inject_data' if it doesn't exist
         #dirName = 'inject_data_'+str(datetime.date.today())
 
-        try:
-            # Create target Directory
-            saveDir = import_folder + '/inject_data'
-            os.mkdir(saveDir)
-        except FileExistsError:
-            pass
+        # Create target Directory
+        #saveDir = import_folder + '/NONE'
+        #saveDir = import_folder + '/IDC'
+        #saveDir = import_folder + '/IDCPS'
+        saveDir = import_folder + '/IDCPSC2'
+        os.mkdir(saveDir)
 
         ########### FLAGS ##################
         ## Tracking/Sampling Flags
         samplingType = sampling.get()  # define sampling type ('spherical' or 'plane') give option
         samplingRadius = sampling_Radius.get()  # define radius of sphere or half-width of plane (1.0-50.0)
         samplingRadius = float(samplingRadius)
-        reverseTrackingFlag = reverse_TrackingFlag.get()  # define direction of tracking (forward=0, reverse=1) give option forward/back
+        reverseTrackingFlag = reverse_TrackingFlag.get()  # define tracking direction (forward=0, reverse=1)
         if reverseTrackingFlag == 'Forward':
             reverseTrackingFlag = 0
         else:
             reverseTrackingFlag = 1
         ## Pathline Flags
-        spread = 0.15  # Gaussian width control (for MC sampling)
-        cutoff = 0.8  # resampling probability threshold (attempt to find suitable path)
+        spread = 0.05  # Gaussian width control (for MC sampling)
+        cutoff = 0.9  # resampling probability threshold (attempt to find suitable path)
         steps = 1200  # iterations (steps*offset = time elapsed)
-        offset = 2.6  # displacement time (ms; empirically derived for 4-point PCVIPR)
+        offset = 2.5  # displacement time (ms; empirically derived for PCVIPR)
         reducer = 2.0  # factor for reducing cutoff probability threshold
-        max_paths = 10000  # initial number of seeds for probabilistic streamlines
+        max_paths = 5000  # initial number of seeds for probabilistic streamlines
         start = time.clock()
         ###################################
 
@@ -196,27 +196,28 @@ def open_second():
             plt.draw_all()
             plt.show(block='false')  # force user to exit figure before code proceeds
         elif samplingType == 'spherical':
-            fig, axs = plt.subplots(ncols=2)
-            plt.setp(axs[0].get_xticklabels(), visible=False)  # get rid of axes and tick marks
-            plt.setp(axs[0].get_yticklabels(), visible=False)
-            plt.setp(axs[1].get_xticklabels(), visible=False)  # get rid of axes and tick marks
-            plt.setp(axs[1].get_yticklabels(), visible=False)
-            fig.suptitle('Localize ROI of interest. Close figure (x) when finished.', fontsize=12)
-
-            axs[0].imshow(axial, cmap='gray')  # show MIPs
-            axs[0].set_title('Axial MIP (select ROI)', fontsize=8)
-            axs[1].imshow(sagittal, cmap='gray')
-            axs[1].set_title('Sagittal MIP (select ROI)', fontsize=8)
-            clickPts = fig.ginput(2, show_clicks='True', timeout=-1)  # select two points on both images
-            row = clickPts[0][1]  # get row,col,slice in image space from point selection
-            col1 = clickPts[0][0]
-            col2 = clickPts[1][0]
-            col = mean([col1, col2])  # average selected location in x (index selected twice from 2 views)
-            slic = clickPts[1][1]
-            axs[0].scatter(col1, row, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))  # show selected points
-            axs[1].scatter(col2, slic, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))
-            plt.draw_all()
-            plt.show(block='false')  # force user to exit figure before code proceeds
+            dummy = 0
+            # fig, axs = plt.subplots(ncols=2)
+            # plt.setp(axs[0].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            # plt.setp(axs[0].get_yticklabels(), visible=False)
+            # plt.setp(axs[1].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            # plt.setp(axs[1].get_yticklabels(), visible=False)
+            # fig.suptitle('Localize ROI of interest. Close figure (x) when finished.', fontsize=12)
+            #
+            # axs[0].imshow(axial, cmap='gray')  # show MIPs
+            # axs[0].set_title('Axial MIP (select ROI)', fontsize=8)
+            # axs[1].imshow(sagittal, cmap='gray')
+            # axs[1].set_title('Sagittal MIP (select ROI)', fontsize=8)
+            # clickPts = fig.ginput(2, show_clicks='True', timeout=-1)  # select two points on both images
+            # row = clickPts[0][1]  # get row,col,slice in image space from point selection
+            # col1 = clickPts[0][0]
+            # col2 = clickPts[1][0]
+            # col = mean([col1, col2])  # average selected location in x (index selected twice from 2 views)
+            # slic = clickPts[1][1]
+            # axs[0].scatter(col1, row, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))  # show selected points
+            # axs[1].scatter(col2, slic, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))
+            # plt.draw_all()
+            # plt.show(block='false')  # force user to exit figure before code proceeds
         else:
             print('ERROR: Need to define a suitable sampling type ("spherical" or "plane").')  # need to select one or the other
 
@@ -250,32 +251,35 @@ def open_second():
             for i in range(max_paths):
                 allpaths.append(bPath([sampleInPlane(Zm, Ym, Xm)]))  # create initial path list
         elif samplingType == 'spherical':
-            r0 = array([slic, row, col])
-            for i in range(int(max_paths)):
+            #r0 = array([slic1, row1, col1])
+            r0 = array([225,145,130])
+            r1 = array([225,149,185])
+            for i in range(max_paths):
                 allpaths.append(bPath([sampleInSphere(samplingRadius, r0)]))
+                allpaths.append(bPath([sampleInSphere(samplingRadius, r1)]))
         else:
             print('ERROR: Need to define a suitable sampling type ("spherical" or "plane").')
 
-
-        ## Begin probabilist streamline generation
+        ## Begin probabilistic streamline generation
         TOA = zeros(CD.shape)
         stoppedpaths = []
         for i in range(steps):
             print(('Iteration: ' + str(i)))
-            stepPathsDisplaceRand(allpaths, V, offset, CD, spread, cutoff, reducer, PLoader)
-            # stepPathsDisplace(allpaths, V, offset)
-            print('Length: ' + str(len(allpaths)))
+            #stepPaths(allpaths, V)
+            #stepPathsDisplace(allpaths, V, offset)
+            #stepPathsDisplaceRand(allpaths, V, offset, spread, PLoader)
+            stepPathsDisplaceRandConstr(allpaths, V, offset, CD, spread, cutoff, reducer, PLoader)
+            #print('Length: ' + str(len(allpaths)))
 
-            TOA = TOA + TOAMap(allpaths, CD.shape, max_paths / len(allpaths))
-            if (i + 1) % 20 == 0:
-                # savename = 'inject_data/TOAf1_t%04d.npy' % i
-                savename = saveDir + '/TOAf1_t%04d.npy' % i
-                print(savename)
+            TOA = TOA + TOAMap(allpaths, CD.shape, max_paths / (len(allpaths)+1))
+
+            if (i + 1) % 30 == 0:
+                savename = saveDir + '/TOAf_t%04d.npy' % i
                 save(savename, TOA.astype('int16'))
-        fullStreams = zeros([len(allpaths), 3, steps])
+        streams = zeros([len(allpaths), 3, steps])
         for s in range(steps):
-            fullStreams[:,:,s] = array([path.pos[s] for path in allpaths])
-        save(saveDir + '/streamlines.npy', fullStreams)
+            streams[:,:,s] = array([path.pos[s] for path in allpaths])
+        save(saveDir + '/streamlines.npy', streams)
         print(('Time: ' + str(time.process_time() - start)))
 
     browseButton = ttk.Button(bot, text="Select Data Folder", command=get_data, width=40
@@ -284,21 +288,9 @@ def open_second():
     #button_start= ttk.Button(bot2, text="Ok", command=run, width=40).grid(column=1, row=3, pady=20, padx=20)
 
 
-
-    # figure()
-    # imshow(CD[:,60:200,:].max(1), origin='upper')
-    # set_cmap('gray')
-    # colorbar()
-# for path in allpaths:
-#    path.plot((2,0))
-# for path in stoppedpaths:
-#    path.plot((2,0))
-# savefig('out2.png')
-# show()
-
 title1=ttk.Label(gui, text="Virtual injection (VI) is a tool developed by University of Wisconsin used for visualizing blood flow from MR scans",background='White', font=('Arial', 10), justify=LEFT)
 title1.grid(column=1, row=0, padx=10, pady=20)
-title2=ttk.Label(gui, text="1. You will be required to select the data for visulaization (MR Scans)\n2. Set a treshold for analyzing data \n3. Select a plane or a sphere indicating the start of blood flow in a region",background='White', font=('Arial', 10), justify=LEFT)
+title2=ttk.Label(gui, text="1. You will be required to select the data for visulaization (MR Scans)\n2. Set a threshold for analyzing data \n3. Select a plane or a sphere indicating the start of blood flow in a region",background='White', font=('Arial', 10), justify=LEFT)
 title2.grid(column=1, row=1, padx=10, pady=10)
 title=ttk.Label(gui ,text="VI was developed by UW scientists and it is used for clinical purposes. For professional clinical use only.", background='White', foreground='Grey',font=('Arial', 10), justify=LEFT)
 title.grid(column=1, row=4, padx=20, pady=20)

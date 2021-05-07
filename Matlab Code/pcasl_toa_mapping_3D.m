@@ -8,9 +8,10 @@ inversion_efficiency = 0.95;
 
 %% Imaging Acquisition
 FLIP = 9;                   % flip angle in degrees
-tr = 5.1;                   % Imaging TR in ms
+tr = 5.6;                   % Imaging TR in ms
 matrix = [320 320 320];     % Reconstructed matrix size
-tag_durations = floor( [0 200 400 600 800 1000 1200]/tr);  % Tag durations
+%tag_durations = floor( [0 200 400 600 800 1000 1200]/tr);  % Tag durations
+tag_durations = floor( [0 625 1250 1875 2500]/tr);  % Tag durations
 TI = 0;                     % TI in ms
 sample_window = 500;        % sample window in ms
 
@@ -102,7 +103,8 @@ disp('Loading Data');
 Nt = numel(tag_durations);
 IMAGES = zeros(matrix(1),matrix(2),matrix(3),Nt);
 for t = 1:Nt
-    name = sprintf('X_%03d_000.dat',t-1);
+    %name = sprintf('X_%03d_000.dat',t-1);
+    name = sprintf('X_%01d_0.dat',t-1);
     disp(['  frame ',num2str(t),' filename = ',name]);
     fid = fopen(name);
     raw = fread(fid,'float');
@@ -169,13 +171,13 @@ if export_results==1
 end
 
 %% Color Display
-RGB =  uint8( zeros([3 size(ArrivalTime)]));
+RGB = uint8( zeros([3 size(ArrivalTime)]));
 
 %%%Make a color image
 max_ARR = 1.4*max(ArrivalTime(:));
 min_ARR = 0.1*max(ArrivalTime(:));
 range_ARR = max_ARR - min_ARR;
-map =hsv(1025);
+map = hsv(1025);
 
 max_signal = max(SignalEstimate(:));
 
