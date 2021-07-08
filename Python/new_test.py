@@ -92,9 +92,9 @@ def open_second():
 
         # Create target Directory
         #saveDir = import_folder + '/NONE'
-        #saveDir = import_folder + '/IDC'
+        saveDir = import_folder + '/IDC'
         #saveDir = import_folder + '/IDCPS'
-        saveDir = import_folder + '/IDCPSC2'
+        #saveDir = import_folder + '/IDCPSC'
         os.mkdir(saveDir)
 
         ########### FLAGS ##################
@@ -108,12 +108,12 @@ def open_second():
         else:
             reverseTrackingFlag = 1
         ## Pathline Flags
-        spread = 0.05  # Gaussian width control (for MC sampling)
+        spread = 0.021  # Gaussian width control (for MC sampling)
         cutoff = 0.9  # resampling probability threshold (attempt to find suitable path)
         steps = 1200  # iterations (steps*offset = time elapsed)
-        offset = 2.5  # displacement time (ms; empirically derived for PCVIPR)
+        offset = 0.833  # displacement time (ms; empirically derived for PCVIPR)
         reducer = 2.0  # factor for reducing cutoff probability threshold
-        max_paths = 5000  # initial number of seeds for probabilistic streamlines
+        max_paths = 10000  # initial number of seeds for probabilistic streamlines
         start = time.clock()
         ###################################
 
@@ -122,7 +122,7 @@ def open_second():
         ##chose folder option; rewrite files in inject_data; add timestamps to folder and/or data
         PLoader = PCVIPR(import_folder)
         CD = PLoader.getArray('CD.dat')
-        MAG = PLoader.getArray('MAG.dat')
+        #MAG = PLoader.getArray('MAG.dat')
         VX = PLoader.getArray('comp_vd_1.dat')
         VY = PLoader.getArray('comp_vd_2.dat')
         VZ = PLoader.getArray('comp_vd_3.dat')

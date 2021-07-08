@@ -12,104 +12,97 @@ class bPath:
         self.plength = 4
         self.plist = deque([1.0, ] * self.plength)
 
-    ## TEST
-    def stepAlong(self, V, P, Split=0, spread=0.1):
-        # Copy extra probabalistic paths
-        out = []
-        for i in range(Split):
-            out.append(bPath(self.pos))
-            out[i].prob = self.prob
-            out[i].plist = deque(self.plist)
-
-        # Calculate deterministic step 
-        k1 = interpolate3D3Dpoint(V, self.pos[-1])
-        k2 = interpolate3D3Dpoint(V, self.pos[-1] + self.h / 2 * k1)
-        k3 = interpolate3D3Dpoint(V, self.pos[-1] + self.h / 2 * k2)
-        k4 = interpolate3D3Dpoint(V, self.pos[-1] + self.h * k3)
-        Step = self.h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-
-        # Step all paths (with stochastic spread)
-        self.pos.append(self.pos[-1] + Step + spread * randn(3))
-        for Path in out:
-            Path.pos.append(Path.pos[-1] + Step + spread * randn(3))
-
-        # Calculate probabilities of the new paths
-        self.updateProb(P)
-        for Path in out:
-            Path.updateProb(P)
-
-        # Return extra paths (current path was updated in place)
-        return out
-
-    ## TEST
-    def updateProb(self, P):
-        p = 1.0
-
-        # Get probability based on probablity mask (complex diff)
-        p = p * interpolate3Dpoint(P, self.pos[-1])
-
-        # Probabolity based on % change in KE
-        if len(self.pos) > 2:
-            dv1 = self.pos[-2] - self.pos[-3]
-            dv2 = self.pos[-1] - self.pos[-2]
-            dKE = (dot(dv1, dv1) - dot(dv2, dv2)) / dot(dv1, dv1)
-            if abs(dKE) > 1:
-                dKE = 1  # Is this too strict?
-            p = p * (1 - abs(dKE))
-
-        self.plist.append(p)
-        self.plist.popleft()
-
-        self.prob = prod(self.plist)
-
-    ## TEST
-    def display(self):
-        patharray = array(self.pos)
-        print(patharray)
-
-    ## TEST
-    def plot(self, axes, crop=0.0):
-        patharray = array(self.pos)
-        plot(patharray[:, axes[0]] - crop, patharray[:, axes[1]] - crop)
+    # ## TEST
+    # def stepAlong(self, V, P, Split=0, spread=0.1):
+    #     # Copy extra probabalistic paths
+    #     out = []
+    #     for i in range(Split):
+    #         out.append(bPath(self.pos))
+    #         out[i].prob = self.prob
+    #         out[i].plist = deque(self.plist)
+    #
+    #     # Calculate deterministic step
+    #     k1 = interpolate3D3Dpoint(V, self.pos[-1])
+    #     k2 = interpolate3D3Dpoint(V, self.pos[-1] + self.h / 2 * k1)
+    #     k3 = interpolate3D3Dpoint(V, self.pos[-1] + self.h / 2 * k2)
+    #     k4 = interpolate3D3Dpoint(V, self.pos[-1] + self.h * k3)
+    #     Step = self.h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    #
+    #     # Step all paths (with stochastic spread)
+    #     self.pos.append(self.pos[-1] + Step + spread * randn(3))
+    #     for Path in out:
+    #         Path.pos.append(Path.pos[-1] + Step + spread * randn(3))
+    #
+    #     # Calculate probabilities of the new paths
+    #     self.updateProb(P)
+    #     for Path in out:
+    #         Path.updateProb(P)
+    #
+    #     # Return extra paths (current path was updated in place)
+    #     return out
+    #
+    # ## TEST
+    # def updateProb(self, P):
+    #     p = 1.0
+    #
+    #     # Get probability based on probablity mask (complex diff)
+    #     p = p * interpolate3Dpoint(P, self.pos[-1])
+    #
+    #     # Probabolity based on % change in KE
+    #     if len(self.pos) > 2:
+    #         dv1 = self.pos[-2] - self.pos[-3]
+    #         dv2 = self.pos[-1] - self.pos[-2]
+    #         dKE = (dot(dv1, dv1) - dot(dv2, dv2)) / dot(dv1, dv1)
+    #         if abs(dKE) > 1:
+    #             dKE = 1  # Is this too strict?
+    #         p = p * (1 - abs(dKE))
+    #
+    #     self.plist.append(p)
+    #     self.plist.popleft()
+    #
+    #     self.prob = prod(self.plist)
+    #
+    # ## TEST
+    # def display(self):
+    #     patharray = array(self.pos)
+    #     print(patharray)
+    #
+    # ## TEST
+    # def plot(self, axes, crop=0.0):
+    #     patharray = array(self.pos)
+    #     plot(patharray[:, axes[0]] - crop, patharray[:, axes[1]] - crop)
 
 
 ## No displacement correction
 def stepPaths(pathlist, V):
     h = pathlist[0].h
-    pos0 = array([path.pos[-1] for path in pathlist])
 
+    pos0 = array([path.pos[-1] for path in pathlist])
     r0 = floor(pos0)
     r1 = ceil(pos0)
     dr = pos0 - r0
     ddr = 1.0 - dr
-
     k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
 
     pos1 = pos0 + k1 * h / 2
-
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-
     k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
 
     pos1 = pos0 + k2 * h / 2
-
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-
     k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
 
     pos1 = pos0 + k3 * h
-
     r0 = floor(pos1)
     r1 = ceil(pos1)
     dr = pos1 - r0
     ddr = 1.0 - dr
-
     k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
 
     Step = h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
@@ -589,7 +582,7 @@ def getKE(pathlist):
 
 
 def stepPathsDisplaceRand2(pathlist, V, offset, P, spread, cutoff):
-    h = offset
+    h = offset  # temporal step size
     print(h)
     pos0 = array([path.pos[-1] for path in pathlist])
 
