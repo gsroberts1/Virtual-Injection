@@ -85,16 +85,8 @@ def open_second():
 
         import_folder = filedialog.askdirectory()
 
-
-
-        # Add directory 'inject_data' if it doesn't exist
-        #dirName = 'inject_data_'+str(datetime.date.today())
-
         # Create target Directory
-        #saveDir = import_folder + '/NONE'
-        saveDir = import_folder + '/IDC'
-        #saveDir = import_folder + '/IDCPS'
-        #saveDir = import_folder + '/IDCPSC'
+        saveDir = import_folder + '/inject_data_'+str(datetime.date.today())
         os.mkdir(saveDir)
 
         ########### FLAGS ##################
@@ -108,10 +100,10 @@ def open_second():
         else:
             reverseTrackingFlag = 1
         ## Pathline Flags
-        spread = 0.021  # Gaussian width control (for MC sampling)
+        spread = 0.15  # Gaussian width control (for MC sampling)
         cutoff = 0.9  # resampling probability threshold (attempt to find suitable path)
         steps = 1200  # iterations (steps*offset = time elapsed)
-        offset = 0.833  # displacement time (ms; empirically derived for PCVIPR)
+        offset = 2.0  # displacement time (ms; empirically derived for PCVIPR)
         reducer = 2.0  # factor for reducing cutoff probability threshold
         max_paths = 10000  # initial number of seeds for probabilistic streamlines
         start = time.clock()
@@ -269,7 +261,7 @@ def open_second():
             #stepPathsDisplace(allpaths, V, offset)
             #stepPathsDisplaceRand(allpaths, V, offset, spread, PLoader)
             stepPathsDisplaceRandConstr(allpaths, V, offset, CD, spread, cutoff, reducer, PLoader)
-            #print('Length: ' + str(len(allpaths)))
+            print('Length: ' + str(len(allpaths)))
 
             TOA = TOA + TOAMap(allpaths, CD.shape, max_paths / (len(allpaths)+1))
 

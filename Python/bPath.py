@@ -475,38 +475,38 @@ def stepPathsDisplaceRandConstr(pathlist, V, offset, P, spread, cutoff, reducer,
     k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)  # get interpolated velocity at pos2
 
     Step = h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)  # approximation of velocity trajectory (weighted average of dr/dt's)
-    # pos0 = pos0 + Step  # Move along v
-    # h = pathlist[0].h
-    #
-    # ## Perform second RK4 step
-    # r0 = floor(pos0)
-    # r1 = ceil(pos0)
-    # dr = pos0 - r0
-    # ddr = 1.0 - dr
-    # k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    # pos1 = pos0 + k1 * h / 2
-    #
-    # r0 = floor(pos1)
-    # r1 = ceil(pos1)
-    # dr = pos1 - r0
-    # ddr = 1.0 - dr
-    # k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    # pos1 = pos0 + k2 * h / 2
-    #
-    # r0 = floor(pos1)
-    # r1 = ceil(pos1)
-    # dr = pos1 - r0
-    # ddr = 1.0 - dr
-    # k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    # pos1 = pos0 + k3 * h
-    #
-    # r0 = floor(pos1)
-    # r1 = ceil(pos1)
-    # dr = pos1 - r0
-    # ddr = 1.0 - dr
-    # k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
-    #
-    # Step = h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    pos0 = pos0 + Step  # Move along v
+    h = pathlist[0].h
+
+    ## Perform second RK4 step
+    r0 = floor(pos0)
+    r1 = ceil(pos0)
+    dr = pos0 - r0
+    ddr = 1.0 - dr
+    k1 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
+    pos1 = pos0 + k1 * h / 2
+
+    r0 = floor(pos1)
+    r1 = ceil(pos1)
+    dr = pos1 - r0
+    ddr = 1.0 - dr
+    k2 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
+    pos1 = pos0 + k2 * h / 2
+
+    r0 = floor(pos1)
+    r1 = ceil(pos1)
+    dr = pos1 - r0
+    ddr = 1.0 - dr
+    k3 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
+    pos1 = pos0 + k3 * h
+
+    r0 = floor(pos1)
+    r1 = ceil(pos1)
+    dr = pos1 - r0
+    ddr = 1.0 - dr
+    k4 = interpolate3D3Dpointarray(V, r0, r1, dr, ddr)
+
+    Step = h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
 
     for i in oobounds:
         pathlist.pop(i)
@@ -547,38 +547,32 @@ def stepPathsDisplaceRandConstr(pathlist, V, offset, P, spread, cutoff, reducer,
     # del pathlist[crop1:]
 
     # Add lost lines to keep up the number of lines
-    # N_new = start_length - len(pathlist)
-    # counter = 0
-    # while counter < N_new:
-    #     ind = randint(low=0, high=len(pathlist))
-    #     prob = 0
-    #     tries = 0
-    #     spreadi = spread
-    #     cutoffi = cutoff
-    #     while prob < cutoffi:
-    #         newpos = pathlist[ind].pos[-1] + spreadi * randn(3)
-    #         prob = newStepProb(pathlist[ind].pos[:-1], newpos, P)
-    #         tries = tries + 1
-    #         if tries == 30:
-    #             cutoffi = cutoffi / reducer
-    #             spreadi = spreadi * reducer
-    #         if tries == 60:
-    #             cutoffi = cutoffi / reducer
-    #             spreadi = spreadi * reducer
-    #         if tries > 90:
-    #             break
-    #     if prob > cutoffi:
-    #         pathlist.append(bPath(pathlist[ind].pos))
-    #         pathlist[-1].pos[-1] = newpos
-    #     counter = counter + 1
+    N_new = start_length - len(pathlist)
+    counter = 0
+    while counter < N_new:
+        ind = randint(low=0, high=len(pathlist))
+        prob = 0
+        tries = 0
+        spreadi = spread
+        cutoffi = cutoff
+        while prob < cutoffi:
+            newpos = pathlist[ind].pos[-1] + spreadi * randn(3)
+            prob = newStepProb(pathlist[ind].pos[:-1], newpos, P)
+            tries = tries + 1
+            if tries == 30:
+                cutoffi = cutoffi / reducer
+                spreadi = spreadi * reducer
+            if tries == 60:
+                cutoffi = cutoffi / reducer
+                spreadi = spreadi * reducer
+            if tries > 90:
+                break
+        if prob > cutoffi:
+            pathlist.append(bPath(pathlist[ind].pos))
+            pathlist[-1].pos[-1] = newpos
+        counter = counter + 1
 
     # return stoppedpaths
-
-
-def getKE(pathlist):
-    for path in pathlist:
-        v = path.pos[-1] - path.pos[-2]
-        path.KE = dot(v, v)
 
 
 def stepPathsDisplaceRand2(pathlist, V, offset, P, spread, cutoff):
@@ -683,6 +677,12 @@ def stepPathsDisplaceRand2(pathlist, V, offset, P, spread, cutoff):
         stoppedpaths.append(pathlist.pop(k))
 
     return stoppedpaths
+
+
+def getKE(pathlist):
+    for path in pathlist:
+        v = path.pos[-1] - path.pos[-2]
+        path.KE = dot(v, v)
 
 
 def newStepProb(pos, newpos, P):
