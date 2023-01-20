@@ -188,28 +188,27 @@ def open_second():
             plt.draw_all()
             plt.show(block='false')  # force user to exit figure before code proceeds
         elif samplingType == 'spherical':
-            dummy = 0
-            # fig, axs = plt.subplots(ncols=2)
-            # plt.setp(axs[0].get_xticklabels(), visible=False)  # get rid of axes and tick marks
-            # plt.setp(axs[0].get_yticklabels(), visible=False)
-            # plt.setp(axs[1].get_xticklabels(), visible=False)  # get rid of axes and tick marks
-            # plt.setp(axs[1].get_yticklabels(), visible=False)
-            # fig.suptitle('Localize ROI of interest. Close figure (x) when finished.', fontsize=12)
-            #
-            # axs[0].imshow(axial, cmap='gray')  # show MIPs
-            # axs[0].set_title('Axial MIP (select ROI)', fontsize=8)
-            # axs[1].imshow(sagittal, cmap='gray')
-            # axs[1].set_title('Sagittal MIP (select ROI)', fontsize=8)
-            # clickPts = fig.ginput(2, show_clicks='True', timeout=-1)  # select two points on both images
-            # row = clickPts[0][1]  # get row,col,slice in image space from point selection
-            # col1 = clickPts[0][0]
-            # col2 = clickPts[1][0]
-            # col = mean([col1, col2])  # average selected location in x (index selected twice from 2 views)
-            # slic = clickPts[1][1]
-            # axs[0].scatter(col1, row, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))  # show selected points
-            # axs[1].scatter(col2, slic, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))
-            # plt.draw_all()
-            # plt.show(block='false')  # force user to exit figure before code proceeds
+            fig, axs = plt.subplots(ncols=2)
+            plt.setp(axs[0].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            plt.setp(axs[0].get_yticklabels(), visible=False)
+            plt.setp(axs[1].get_xticklabels(), visible=False)  # get rid of axes and tick marks
+            plt.setp(axs[1].get_yticklabels(), visible=False)
+            fig.suptitle('Localize ROI of interest. Close figure (x) when finished.', fontsize=12)
+
+            axs[0].imshow(axial, cmap='gray')  # show MIPs
+            axs[0].set_title('Axial MIP (select ROI)', fontsize=8)
+            axs[1].imshow(sagittal, cmap='gray')
+            axs[1].set_title('Sagittal MIP (select ROI)', fontsize=8)
+            clickPts = fig.ginput(2, show_clicks='True', timeout=-1)  # select two points on both images
+            row = clickPts[0][1]  # get row,col,slice in image space from point selection
+            col1 = clickPts[0][0]
+            col2 = clickPts[1][0]
+            col = mean([col1, col2])  # average selected location in x (index selected twice from 2 views)
+            slic = clickPts[1][1]
+            axs[0].scatter(col1, row, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))  # show selected points
+            axs[1].scatter(col2, slic, marker='o', color='lime', alpha=0.8, s=(pi * samplingRadius ** 2))
+            plt.draw_all()
+            plt.show(block='false')  # force user to exit figure before code proceeds
         else:
             print('ERROR: Need to define a suitable sampling type ("spherical" or "plane").')  # need to select one or the other
 
@@ -243,12 +242,9 @@ def open_second():
             for i in range(max_paths):
                 allpaths.append(bPath([sampleInPlane(Zm, Ym, Xm)]))  # create initial path list
         elif samplingType == 'spherical':
-            #r0 = array([slic1, row1, col1])
-            r0 = array([225,145,130])
-            r1 = array([225,149,185])
+            r0 = array([slic, row, col])
             for i in range(max_paths):
                 allpaths.append(bPath([sampleInSphere(samplingRadius, r0)]))
-                allpaths.append(bPath([sampleInSphere(samplingRadius, r1)]))
         else:
             print('ERROR: Need to define a suitable sampling type ("spherical" or "plane").')
 
