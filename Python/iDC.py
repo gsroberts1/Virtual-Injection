@@ -1,6 +1,8 @@
 from pylab import *
 from interpolate_testcy import *
 
+# THIS CODE HAS NOT BEEN FULLY TESTED IN PYTHON
+# THESE FUNCTIONS WERE TAKEN FROM MATLAB (iDC.m), MAY NEED ADJUSTMENTS
 
 def iDC(Vd, dt0, n_iter):
     # IDC Iterative displacement correction for correcting displaced velocities
